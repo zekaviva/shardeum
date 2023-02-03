@@ -109,8 +109,6 @@ export const INITIAL_PARAMETERS: NetworkParameters = {
   stakeRequired: oneEth.mul(new BN(10)), // 10 SHM
   maintenanceInterval: ONE_DAY,
   maintenanceFee: 0,
-  minVersion: '1.0.0',
-  activeVersion: '1.0.0',
 }
 
 export let genesisAccounts = []
@@ -4566,8 +4564,7 @@ shardus.setup({
         }
       }
 
-      const minVersion = AccountsStorage.cachedNetworkAccount.current.minVersion
-      if (!isEqualOrNewerVersion(version, minVersion)) {
+      if (!isEqualOrNewerVersion(version, data.appJoinData.version)) {
         /* prettier-ignore */ if (ShardeumFlags.VerboseLogs) console.log(`validateJoinRequest fail: old version`)
         return {
           success: false,
@@ -4878,13 +4875,13 @@ shardus.setup({
   },
   async updateNetworkChangeQueue(account: WrappedAccount, appData: any) {
     if (account.accountId === networkAccount) {
-      let networkAccount: NetworkAccount = account.data
+      let networkParam: NetworkAccount = account.data
       for (let key in appData) {
-        networkAccount.current[key] = appData[key]
+        networkParam.current[key] = appData[key]
       }
       account.timestamp = Date.now()
-      networkAccount.hash = WrappedEVMAccountFunctions._calculateAccountHash(networkAccount)
-      account.stateId = networkAccount.hash
+      networkParam.hash = WrappedEVMAccountFunctions._calculateAccountHash(networkParam)
+      account.stateId = networkParam.hash
       return [account]
     }
   },

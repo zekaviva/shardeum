@@ -235,8 +235,6 @@ export interface NetworkParameters {
   stakeRequired: BN
   maintenanceInterval: number
   maintenanceFee: number
-  minVersion: string
-  activeVersion: string
 }
 
 export interface NodeAccount extends BaseAccount {
