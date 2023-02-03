@@ -76,6 +76,7 @@ import {
 import * as InitRewardTimesTx from './tx/initRewardTimes'
 import _ from 'lodash'
 import { isDebugTx, isInternalTx, crypto, getInjectedOrGeneratedTimestamp } from './setup/helpers'
+import { isPortReachable } from './utils/isPortReachable'
 
 const env = process.env
 
@@ -4539,12 +4540,30 @@ shardus.setup({
     }
     return joinData
   },
-  validateJoinRequest(data: any) {
+  async validateJoinRequest(data: any) {
+    console.log('Validating join request with data:', data)
+
     try {
       /* prettier-ignore */ if (ShardeumFlags.VerboseLogs) console.log(`validateJoinRequest ${JSON.stringify(data)}`)
       if (!data.appJoinData) {
         /* prettier-ignore */ if (ShardeumFlags.VerboseLogs) console.log(`validateJoinRequest fail: !data.appJoinData`)
         return { success: false, reason: `Join request node doesn't provide the app join data.` }
+      }
+
+      const externalIp = data.nodeInfo.externalIp
+      const externalPort = data.nodeInfo.externalPort
+      const internalIp = data.nodeInfo.internalIp
+      const internalPort = data.nodeInfo.internalPort
+
+      const externalPortReachable = await isPortReachable({ host: externalIp, port: externalPort })
+      const internalPortReachable = await isPortReachable({ host: internalIp, port: internalPort })
+
+      if (!externalPortReachable || !internalPortReachable) {
+        /* prettier-ignore */ if (ShardeumFlags.VerboseLogs) console.log(`validateJoinRequest fail: could not reach joining node. externalPortReachable: ${externalPortReachable}, internalPortReachable: ${internalPortReachable}`)
+        return {
+          success: false,
+          reason: `Could not reach joining node. One or more of the ports are not open`,
+        }
       }
 
       const minVersion = AccountsStorage.cachedNetworkAccount.current.minVersion
