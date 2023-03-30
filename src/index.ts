@@ -103,7 +103,7 @@ import {
   hashSignedObj,
 } from './setup/helpers'
 import { onActiveVersionChange } from './versioning'
-import { shardusFactory } from '@shardus/core'
+import { shardusFactory, CachedAppData } from '@shardus/core'
 import { unsafeGetClientIp } from './utils/requests'
 import { initialNetworkParamters } from './shardeum/initialNetworkParameters'
 import { oneSHM, networkAccount, ONE_SECOND } from './shardeum/shardeumConstants'
@@ -1561,9 +1561,9 @@ shardus.registerExternalGet('tx/:hash', async (req, res) => {
   if (!ShardeumFlags.EVMReceiptsAsAccounts) {
     try {
       const dataId = toShardusAddressWithKey(txHash, '', AccountType.Receipt)
-      let cachedAppData = await shardus.getLocalOrRemoteCachedAppData('receipt', dataId)
+      let cachedAppData = await shardus.getLocalOrRemoteCachedAppData('receipt', dataId) as CachedAppData;
       if (ShardeumFlags.VerboseLogs) console.log(`cachedAppData for tx hash ${txHash}`, cachedAppData)
-      if (cachedAppData && cachedAppData.appData) cachedAppData = cachedAppData.appData
+      if (cachedAppData?.appData) cachedAppData = cachedAppData.appData as CachedAppData
       // @ts-ignore
       return res.json({ account: cachedAppData?.data ? cachedAppData.data : cachedAppData })
     } catch (e) {
