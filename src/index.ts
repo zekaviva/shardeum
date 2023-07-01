@@ -110,6 +110,7 @@ import { unsafeGetClientIp } from './utils/requests'
 import { initialNetworkParamters } from './shardeum/initialNetworkParameters'
 import { oneSHM, networkAccount, ONE_SECOND } from './shardeum/shardeumConstants'
 import { applyPenaltyTX } from './tx/penalty/transaction'
+import blockedAt from 'blocked-at'
 
 let latestBlock = 0
 export const blocks: BlockMap = {}
@@ -1566,7 +1567,7 @@ shardus.registerExternalGet('tx/:hash', async (req, res) => {
   if (!ShardeumFlags.EVMReceiptsAsAccounts) {
     try {
       const dataId = toShardusAddressWithKey(txHash, '', AccountType.Receipt)
-      let cachedAppData = await shardus.getLocalOrRemoteCachedAppData('receipt', dataId)
+      let cachedAppData: any = await shardus.getLocalOrRemoteCachedAppData('receipt', dataId)
       if (ShardeumFlags.VerboseLogs) console.log(`cachedAppData for tx hash ${txHash}`, cachedAppData)
       if (cachedAppData && cachedAppData.appData) cachedAppData = cachedAppData.appData
       // @ts-ignore
@@ -5453,6 +5454,13 @@ function periodicMemoryCleanup(): void {
 }
 
 setTimeout(periodicMemoryCleanup, 60000)
+
+blockedAt(
+  (time, stack) => {
+    console.log(`[DEBUG] Blocked for ${time}ms, operation started here:`, stack)
+  },
+  { threshold: 1000 }
+)
 
 if (ShardeumFlags.GlobalNetworkAccount) {
   // CODE THAT GETS EXECUTED WHEN NODES START
