@@ -42,41 +42,35 @@ if (process.env.APP_SEEDLIST) {
   config = merge(
     config,
     {
-      server: {
-        p2p: {
-          existingArchivers: [
-            {
-              ip: process.env.APP_SEEDLIST,
-              port: process.env.APP_SEEDLIST_PORT || 4000,
-              publicKey:
-                process.env.APP_SEEDLIST_PUBLIC_KEY ||
-                '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
-            },
-          ],
+      archivers: [
+        {
+          ip: process.env.APP_SEEDLIST,
+          port: process.env.APP_SEEDLIST_PORT || 4000,
+          publicKey:
+            process.env.APP_SEEDLIST_PUBLIC_KEY ||
+            '758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3',
         },
-      },
+      ],
     },
     { arrayMerge: overwriteMerge }
   )
 }
 
+// use ARCHIVER_INFO env instead following the archiver discovery format: ip1:port1:publicKey1,ip2:port2:publicKey2,ip3:port3:publicKey3,...
+
 // EXISTING_ARCHIVERS env has to be passed in string format!
-if (process.env.EXISTING_ARCHIVERS) {
-  const existingArchivers = JSON.parse(process.env.EXISTING_ARCHIVERS)
-  if (existingArchivers.length > 0) {
-    config = merge(
-      config,
-      {
-        server: {
-          p2p: {
-            existingArchivers,
-          },
-        },
-      },
-      { arrayMerge: overwriteMerge }
-    )
-  }
-}
+// if (process.env.EXISTING_ARCHIVERS) {
+//   const archivers = JSON.parse(process.env.EXISTING_ARCHIVERS)
+//   if (archivers.length > 0) {
+//     config = merge(
+//       config,
+//       {
+//         archivers
+//       },
+//       { arrayMerge: overwriteMerge }
+//     )
+//   }
+// }
 
 if (process.env.APP_MONITOR) {
   config = merge(
