@@ -36,6 +36,7 @@
     "@shardus/core": "2.9.24",
     "@shardus/crypto-utils": "4.0.4",
     "@types/sqlite3": "^3.1.8",
+    "blocked-at": "^1.2.0",
     "cliffy": "^2.5.1",
     "deepmerge": "^4.2.2",
     "dotenv": "^16.0.0",
@@ -46,7 +47,8 @@
     "inquirer": "^9.1.4",
     "sequelize": "^6.15.1",
     "sqlite3": "^4.2.0",
-    "typescript": "^4.5.2"
+    "typescript": "^4.5.2",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@shardus/archiver": "^3.3.1",
