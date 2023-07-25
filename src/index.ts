@@ -2573,16 +2573,20 @@ function getNodeCountForCertSignatures(): number {
   return Math.min(ShardeumFlags.MinStakeCertSig, activeNodeCount)
 }
 
-let blockedCheck = null;
+let blockedAtEventHook = null;
 
-function startBlockedCheck(threshold : number) : void {
+function startBlockedCheck(threshold: number): void {
   // Stop any existing blocked-at check
-  if (blockedCheck) {
-    blockedCheck.stop();
+  if (blockedAtEventHook) {
+    try {
+      blockedAtEventHook.stop();
+    } catch (error) {
+      console.error('Error stopping blocked check:', error)
+    }
   }
 
   // Start a new blocked-at check with the given threshold
-  blockedCheck = blockedAt(
+  blockedAtEventHook = blockedAt(
     (time, stack, { type, resource }) => {
       const uuid = uuidv4();
       
