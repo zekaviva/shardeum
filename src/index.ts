@@ -1782,15 +1782,18 @@ shardus.registerExternalGet('debug-is-ready-to-join', async (req, res) => {
 
 // Changes the threshold for the blocked-At function
 shardus.registerExternalGet('debug-set-event-block-threshold', debugMiddleware, async (req, res) => {
+  try {
+    let threshold = Number(req.query.threshold);
 
-  const threshold = Number(req.query.threshold);
-  if (isNaN(threshold) || threshold <= 0) {
-    res.status(400).json({ error: 'Invalid threshold' });
-    return;
+    if (isNaN(threshold) || threshold <= 0) {
+      return res.json({ error: `Invalid threshold: ${req.query.threshold}` });
+    }
+
+    startBlockedCheck(threshold);
+    return res.json({ success: `Threshold set to ${threshold}ms` });
+  } catch (err) {
+    return res.json({ error: `Error setting threshold: ${err.toString()}` });
   }
-  
-  startBlockedCheck(threshold);
-  return res.json({ success: `Threshold set to ${threshold}ms` });  
 });
 
 /***
