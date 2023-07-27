@@ -85,7 +85,7 @@ import { Block } from '@ethereumjs/block'
 import { ShardeumBlock } from './block/blockchain'
 import * as AccountsStorage from './storage/accountStorage'
 import { StateManager } from '@ethereumjs/vm/dist/state'
-import { sync, validateTransaction, validateTxnFields } from './setup'
+import { sync, validateTransaction, validateTxnFields, createDevAccount } from './setup'
 import { applySetCertTimeTx, injectSetCertTimeTx, getCertCycleDuration } from './tx/setCertTime'
 import { applyClaimRewardTx, injectClaimRewardTxWithRetry } from './tx/claimReward'
 import { Request, Response } from 'express'
@@ -1017,6 +1017,28 @@ const configShardusEndpoints = (): void => {
     debugServicePointsByType.clear()
     return res.json(`point spenders cleared. totalSpendActions: ${totalSpends} `)
   })
+
+  shardus.registerExternalGet('debug-set-dev-account', debugMiddleware, async (req, res) => {
+    if (!ShardeumFlags.devPublicKey) {
+      res.json("No devPublicKey found")
+    }
+
+    const { account, cycle } = createDevAccount(ShardeumFlags.devPublicKey, shardus.getLatestCycles())
+    const devAccount: any = account // eslint-disable-line @typescript-eslint/no-explicit-any
+    await AccountsStorage.setAccount(devAccount.id, devAccount)
+    const accountCopy: ShardusTypes.AccountsCopy = {
+      cycleNumber: cycle.counter,
+      accountId: devAccount.id,
+      data: devAccount,
+      hash: devAccount.hash,
+      isGlobal: false,
+      timestamp: devAccount.timestamp,
+    }
+
+    await shardus.debugCommitAccountCopies([accountCopy])
+    return res.json({ devAccount: accountCopy })
+  })
+
 
   shardus.registerExternalPost('inject', async (req, res) => {
     const tx = req.body

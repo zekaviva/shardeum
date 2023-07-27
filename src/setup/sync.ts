@@ -30,6 +30,24 @@ const debugShardeumState: ShardeumState = null
 
 export const ONE_SECOND = 1000
 
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const createDevAccount = (accountId: string, latestCycles: any): { account: DevAccount; cycle: any } => {
+  let cycleStart = 0
+  if (latestCycles != null && latestCycles.length > 0) {
+    cycleStart = latestCycles[0].start * 1000
+    console.log('dev account created time: ', cycleStart)
+  }
+  const account: DevAccount = {
+    id: accountId,
+    accountType: AccountType.DevAccount,
+    hash: '',
+    timestamp: cycleStart,
+  }
+  account.hash = WrappedEVMAccountFunctions._calculateAccountHash(account)
+  return { account, cycle: latestCycles[0] }
+}
+
 export const sync = (shardus: Shardus, evmCommon: Common) => async (): Promise<void> => {
   if (ShardeumFlags.useAccountWrites) shardus.useAccountWrites()
   if (ShardeumFlags.GlobalNetworkAccount) {
@@ -183,23 +201,6 @@ async function manuallyCreateAccount(
   }
   WrappedEVMAccountFunctions.updateEthAccountHash(wrappedEVMAccount)
   return { accountId: shardusAccountID, wrappedEVMAccount, cycle: latestCycles[0] }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createDevAccount = (accountId: string, latestCycles: any): { account: DevAccount; cycle: any } => {
-  let cycleStart = 0
-  if (latestCycles != null && latestCycles.length > 0) {
-    cycleStart = latestCycles[0].start * 1000
-    console.log('dev account created time: ', cycleStart)
-  }
-  const account: DevAccount = {
-    id: accountId,
-    accountType: AccountType.DevAccount,
-    hash: '',
-    timestamp: cycleStart,
-  }
-  account.hash = WrappedEVMAccountFunctions._calculateAccountHash(account)
-  return { account, cycle: latestCycles[0] }
 }
 
 /**
