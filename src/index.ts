@@ -1726,7 +1726,7 @@ const configShardusEndpoints = (): void => {
   //   res.json({ tx: result })
   // })
 
-  shardus.registerExternalGet('accounts', debugMiddleware, async (req, res) => {
+  shardus.registerExternalGet('debug-accounts', debugMiddleware, async (req, res) => {
     // if(isDebugMode()){
     //   return res.json(`endpoint not available`)
     // }
