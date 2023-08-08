@@ -1726,7 +1726,7 @@ const configShardusEndpoints = (): void => {
   //   res.json({ tx: result })
   // })
 
-  shardus.registerExternalGet('debug-accounts', debugMiddleware, async (req, res) => {
+  shardus.registerExternalGet('accounts', debugMiddleware, async (req, res) => {
     // if(isDebugMode()){
     //   return res.json(`endpoint not available`)
     // }
@@ -1760,7 +1760,7 @@ const configShardusEndpoints = (): void => {
   })
 
   // Returns the hardware-spec of the server running the validator
-  shardus.registerExternalGet('system-info', async (req, res) => {
+  shardus.registerExternalGet('debug-system-info', async (req, res) => {
     let result = {
       platform: platform(),
       arch: arch(),
