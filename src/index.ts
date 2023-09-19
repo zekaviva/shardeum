@@ -281,6 +281,7 @@ function convertToReadableBlock(block: Block): ShardeumBlockOverride {
     extraData: '0x476574682f4c5649562f76312e302e302f6c696e75782f676f312e342e32',
     gasLimit: '0x4a817c800', // 20000000000   "0x1388",
     gasUsed: '0x0',
+    gasRefund: '0x0',
     hash: '0xdc0818cf78f21a8e70579cb46a43643f78291264dda342ae31049421c82d21ae',
     logsBloom:
       '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -2124,6 +2125,7 @@ export const createInternalTxReceipt = (
     blockHash: readableBlocks[blockNumberForTx]?.hash, // eslint-disable-line security/detect-object-injection
     cumulativeGasUsed: '0x0',
     gasUsed: '0x0',
+    gasRefund: '0x0',
     logs: [],
     logsBloom: '',
     contractAddress: null,
@@ -2918,6 +2920,7 @@ const shardusSetup = (): void => {
               new BN(ShardeumFlags.constantTxFeeUsd),
               AccountsStorage.cachedNetworkAccount
             ).toString('hex'),
+          gasRefund: '0x0',
           logs: [],
           logsBloom: '',
           contractAddress: null,
@@ -3145,6 +3148,7 @@ const shardusSetup = (): void => {
               AccountsStorage.cachedNetworkAccount
             ).toString('hex'),
           logs: [],
+          gasRefund: '0x0',
           logsBloom: '',
           contractAddress: null,
           from: transaction.getSenderAddress().toString(),
@@ -3314,6 +3318,7 @@ const shardusSetup = (): void => {
           logs: null,
           logsBloom: null,
           gasUsed: '0x',
+          gasRefund: '0x0',
           contractAddress: caAddr,
           from: transaction.getSenderAddress().toString(),
           to: transaction.to ? transaction.to.toString() : null,
@@ -3607,6 +3612,7 @@ const shardusSetup = (): void => {
           blockHash: readableBlocks[blockForTx.header.number.toNumber()].hash,
           cumulativeGasUsed: '0x' + runTxResult.gasUsed.toString('hex'),
           gasUsed: '0x' + runTxResult.gasUsed.toString('hex'),
+          gasRefund: '0x' + (runTxResult.execResult.gasRefund?.toString('hex') ?? '0'),
           logs: logs,
           logsBloom: bufferToHex(runTxResult.receipt.bitvector),
           contractAddress: runTxResult.createdAddress ? runTxResult.createdAddress.toString() : null,
@@ -5700,7 +5706,7 @@ const shardusSetup = (): void => {
         /* eslint-disable security/detect-object-injection */
         const networkAccount: NetworkAccount = account.data
         const listOfChanges = account.data.listOfChanges
-        
+
         const configsMap = new Map()
         const keepAliveCount = shardusConfig.stateManager.configChangeMaxChangesToKeep
         for (let i = listOfChanges.length - 1; i >= 0; i--) {
@@ -5886,17 +5892,17 @@ export let shardusConfig: ShardusTypes.ServerConfiguration
   let configToLoad
   try {
 
-    
+
     // Attempt to get and patch config. Error if unable to get config.
     const networkAccount = await fetchNetworkAccountFromArchiver()
 
     configToLoad = await updateConfigFromNetworkAccount(config, networkAccount)
-    
+
     console.log( `Using patched configs: ${JSON.stringify(configToLoad)}`)
 
   } catch (error) {
     console.log(`Error getting network account: ${error} \nUsing default configs`)
- 
+
     configToLoad = config;
   }
 
