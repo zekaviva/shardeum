@@ -154,7 +154,7 @@ export const ShardeumFlags: ShardeumFlags = {
     ['tx/:hash']: 5,
   },
   generateMemoryPatternData: true,
-  StakingEnabled: true,
+  StakingEnabled: false,
   ModeEnabled: true,
   AdminCertEnabled: false,
   minActiveNodesForStaking: 5,
