@@ -42,17 +42,9 @@ rl.on('line', (line) => {
 
 // When file reading is complete, log the completeCycles array or perform further processing
 rl.on('close', () => {
-  const filteredCycles = completeCycles.map((cycle, index) => {
-    if (index < completeCycles.length - 1) {
-      const nextCyclePorts = new Set(completeCycles[index + 1].map((r) => r.port))
-      return cycle.filter((record) => nextCyclePorts.has(record.port))
-    }
-    return [] // we dont know if the last cycle will contain rotating out nodes so ignore it for now
-  })
+  console.log('Finished reading the file. Processing complete.')
 
-  console.log('Finished reading and filtering the file. Processing complete.')
-
-  const uniqueCompleteCycles = filteredCycles.map((cycleArray) => {
+  const uniqueCompleteCycles = completeCycles.map((cycleArray) => {
     const cycleMap = new Map()
     //console.log(cycleArray);
     //console.log(cycleMap);
@@ -64,8 +56,6 @@ rl.on('close', () => {
           cycleMap.set(key, value)
           found = true
           break
-        } else {
-          //console.log('Not equal:', key, cycleRecord)
         }
       }
 
@@ -76,7 +66,6 @@ rl.on('close', () => {
 
     return cycleMap
   })
-
   // Analysis functions
 
   function printCycle(cycle) {
