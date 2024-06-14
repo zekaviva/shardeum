@@ -118,6 +118,7 @@ interface ShardeumFlags {
   collectorUrl: string
   aalgWarmupSleep: number
   internalTxTimestampFix: boolean
+  unifiedAccountBalanceEnabled: boolean
 }
 
 export const ShardeumFlags: ShardeumFlags = {
@@ -269,6 +270,7 @@ export const ShardeumFlags: ShardeumFlags = {
   aalgWarmupSleep: 100,
 
   internalTxTimestampFix: true,
+  unifiedAccountBalanceEnabled: true,
 }
 
 export function updateShardeumFlag(key: string, value: string | number | boolean): void {
