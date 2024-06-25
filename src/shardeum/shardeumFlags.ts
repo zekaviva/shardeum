@@ -271,10 +271,9 @@ export const ShardeumFlags: ShardeumFlags = {
   aalgWarmupSleep: 100,
 
   internalTxTimestampFix: true,
-
   debugExtraNonceLookup: false,
 
-  enableRewardTxs: false, // turns reward TXs on or off
+  enableRewardTxs: true, // turns reward TXs on or off
 }
 
 export function updateShardeumFlag(key: string, value: string | number | boolean): void {
