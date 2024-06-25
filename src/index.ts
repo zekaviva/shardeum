@@ -6751,7 +6751,7 @@ const shardusSetup = (): void => {
       const currentlyActivatedNode = currentCycle.activated.includes(nodeId)
       if (currentlyActivatedNode) return
 
-      if (eventType === 'node-activated') {
+      if (eventType === 'node-activated' && ShardeumFlags.enableRewardTxs) {
         const activeNodesCount = currentCycle.active
         const stakingEnabled = activeNodesCount >= ShardeumFlags.minActiveNodesForStaking
         // Skip initRewardTimes if activeNodesCount is less than minActiveNodesForStaking
@@ -6770,7 +6770,7 @@ const shardusSetup = (): void => {
             /* prettier-ignore */ if (logFlags.dapp_verbose) console.log('INJECTED_INIT_REWARD_TIMES_TX', result)
           }
         }
-      } else if (eventType === 'node-deactivated') {
+      } else if (eventType === 'node-deactivated' && ShardeumFlags.enableRewardTxs) {
         // todo: aamir check the timestamp and cycle the first time we see this event
         nestedCountersInstance.countEvent('shardeum-staking', `node-deactivated: injectClaimRewardTx`)
 
