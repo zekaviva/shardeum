@@ -3,8 +3,13 @@ import { Change, NetworkParameters } from '../shardeum/shardeumTypes'
 import { BaseAccount, deserializeBaseAccount, serializeBaseAccount } from './BaseAccount'
 import { TypeIdentifierEnum } from './enum/TypeIdentifierEnum'
 import { Utils } from '@shardus/types'
+import { ShardeumFlags } from '../shardeum/shardeumFlags'
 
 const cNetworkAccountVersion = 1
+
+// Delete this and the corresponding flag post upgrade to 1.11.2
+const Beta1_11_2NetworkAccountJson =
+  '{"accountType":5,"current":{"activeVersion":"1.11.0","archiver":{"activeVersion":"3.4.12","latestVersion":"3.4.12","minVersion":"3.4.12"},"certCycleDuration":30,"description":"These are the initial network parameters Shardeum started with","latestVersion":"1.11.2","maintenanceFee":0,"maintenanceInterval":86400000,"minVersion":"1.11.2","nodePenaltyUsd":{"dataType":"bi","value":"8ac7230489e80000"},"nodeRewardAmountUsd":{"dataType":"bi","value":"de0b6b3a7640000"},"nodeRewardInterval":3600000,"stabilityScaleDiv":1000,"stabilityScaleMul":1000,"stakeRequiredUsd":{"dataType":"bi","value":"8ac7230489e80000"},"title":"Initial parameters","txPause":false},"hash":"a8db05a4e6afe56b8c70cb3bc74f38531444967671daa353efa70d871132f9f9","id":"1000000000000000000000000000000000000000000000000000000000000001","listOfChanges":[{"appData":{"latestVersion":"1.11.2"},"change":{},"cycle":9363},{"appData":{"latestVersion":"1.11.2"},"change":{},"cycle":9380},{"appData":{"minVersion":"1.11.2"},"change":{},"cycle":9381},{"appData":{"minVersion":"1.11.2"},"change":{},"cycle":9382},{"appData":{"latestVersion":"1.11.2"},"change":{},"cycle":9531}],"next":{},"timestamp":1719569447484}'
 
 export interface NetworkAccount extends BaseAccount {
   id: string
@@ -12,8 +17,10 @@ export interface NetworkAccount extends BaseAccount {
   listOfChanges: Array<{
     cycle: number
     change: Change
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    appData: any
   }>
-  next
+  next: NetworkParameters | object
   hash: string
   timestamp: number
 }
@@ -37,6 +44,8 @@ export function serializeNetworkAccount(stream: VectorBufferStream, obj: Network
     stream.writeUInt32(changeObj.cycle)
     const changeJson = Utils.safeStringify(changeObj.change)
     stream.writeString(changeJson)
+    const appDataJson = Utils.safeStringify(changeObj.appData)
+    stream.writeString(appDataJson)
   }
 
   stream.writeString(obj.hash)
@@ -44,6 +53,10 @@ export function serializeNetworkAccount(stream: VectorBufferStream, obj: Network
 }
 
 export function deserializeNetworkAccount(stream: VectorBufferStream): NetworkAccount {
+  if (ShardeumFlags.beta1_11_2) {
+    return Utils.safeJsonParse(Beta1_11_2NetworkAccountJson) as NetworkAccount
+  }
+
   const version = stream.readUInt8()
   if (version > cNetworkAccountVersion) {
     throw new Error('NetworkAccount version mismatch')
@@ -60,7 +73,8 @@ export function deserializeNetworkAccount(stream: VectorBufferStream): NetworkAc
   for (let i = 0; i < changesCount; i++) {
     const cycle = stream.readUInt32()
     const change = Utils.safeJsonParse(stream.readString()) as Change
-    listOfChanges.push({ cycle, change })
+    const appData = Utils.safeJsonParse(stream.readString())
+    listOfChanges.push({ cycle, change, appData })
   }
 
   const hash = stream.readString()
