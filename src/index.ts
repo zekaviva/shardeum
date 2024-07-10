@@ -997,14 +997,14 @@ export function getApplyTXState(txId: string): ShardeumState {
 
 /**
  * deleteApplyTXState
- * @param txId 
+ * @param txId
  * @param context must be a non format string to avoid counter spam
  */
 function deleteApplyTXState(txId: string, context:string): void {
   if(shardeumStateTXMap.has(txId)){
     nestedCountersInstance.countEvent('shardeum', `deleteApplyTXState ${context}`)
     shardeumStateTXMap.delete(txId)
-  } 
+  }
 }
 
 function _containsProtocol(url: string): boolean {
@@ -1669,7 +1669,7 @@ const configShardusEndpoints = (): void => {
               `${consensusNode.externalIp}:${consensusNode.externalPort}/contract/call`,
               callObj
             )
-            if (postResp.body != null && postResp.body != '') {
+            if (postResp != null && postResp.body != null && postResp.body != '') {
               //getResp.body
 
               /* prettier-ignore */ if (ShardeumFlags.VerboseLogs) console.log(`Node is in remote shard: gotResp:${Utils.safeStringify(postResp.body)}`)
@@ -1726,7 +1726,7 @@ const configShardusEndpoints = (): void => {
         opt['block'] = blocks[latestBlock] // eslint-disable-line security/detect-object-injection
       }
 
-      
+
       const customEVM = new EthereumVirtualMachine({
         common: evmCommon,
         stateManager: callTxState,
@@ -2777,7 +2777,7 @@ async function estimateGas(
           originalInjectedTx
         )
         /* prettier-ignore */ if (ShardeumFlags.VerboseLogs) console.log('EstimateGas response from node', consensusNode.externalPort, postResp.body)
-        if (postResp.body != null && postResp.body != '' && postResp.body.estimateGas != null) {
+        if (postResp != null && postResp.body != null && postResp.body != '' && postResp.body.estimateGas != null) {
           const estimateResultFromNode = postResp.body.estimateGas
 
           /* prettier-ignore */ if (ShardeumFlags.VerboseLogs) console.log(`Node is in remote shard: gotResp:`, estimateResultFromNode)
@@ -2917,7 +2917,7 @@ async function generateAccessList(
             { injectedTx, warmupList }
           )
           /* prettier-ignore */ if (logFlags.dapp_verbose || logFlags.aalg) console.log('Accesslist response from node', consensusNode.externalPort, postResp.body)
-          if (postResp.body != null && postResp.body != '' && postResp.body.accessList != null) {
+          if (postResp != null && postResp.body != null && postResp.body != '' && postResp.body.accessList != null) {
             /* prettier-ignore */ if (logFlags.dapp_verbose || logFlags.aalg) console.log(`Node is in remote shard: gotResp:${Utils.safeStringify(postResp.body)}`)
             if (Array.isArray(postResp.body.accessList) && postResp.body.accessList.length > 0) {
               /* prettier-ignore */ nestedCountersInstance.countEvent('accesslist', `remote shard accessList: ${postResp.body.accessList.length} items, success: ${postResp.body.failedAccessList != true}`)
@@ -6064,7 +6064,7 @@ const shardusSetup = (): void => {
         //This next log is usefull but very heavy on the output lines:
         //Updating to be on only with verbose logs
         /* prettier-ignore */ if (ShardeumFlags.VerboseLogs) console.log('running transactionReceiptPass', txId, tx, wrappedStates, applyResponse)
-        _transactionReceiptPass(tx, txId, wrappedStates, applyResponse)        
+        _transactionReceiptPass(tx, txId, wrappedStates, applyResponse)
       }
 
       //clear this out of the shardeum state map
@@ -7121,11 +7121,11 @@ const shardusSetup = (): void => {
             const wrappedEVMAccount = account.data as WrappedEVMAccount
             return wrappedEVMAccount.account.nonce
           }
-          //if we did not get an exeption we could return null, but seems better to retry 
+          //if we did not get an exeption we could return null, but seems better to retry
         }catch(e) {
           exceptionCount++
           //This has the potential to spam our counters if message has a format string. may have to dial it back
-          //or disable after we fix issues 
+          //or disable after we fix issues
           /* prettier-ignore */ nestedCountersInstance.countEvent('getAccountNonce', `getAccountNonce: ${e.message}`)
         }
       }
@@ -7141,7 +7141,7 @@ const shardusSetup = (): void => {
 
 
 //Note, this functionality was disabled 10 months ago.
-//now that we are moving away from TX expiration we would need to be safe if we ever 
+//now that we are moving away from TX expiration we would need to be safe if we ever
 //turn this back on.  (note, disabled by having setTimeout not called again)
 function periodicMemoryCleanup(): void {
   const keys = shardeumStateTXMap.keys()
@@ -7190,16 +7190,22 @@ async function fetchNetworkAccountFromArchiver(): Promise<WrappedAccount> {
     /* prettier-ignore */ nestedCountersInstance.countEvent('network-config-operation', 'failure: no majority found for archivers get-network-account result. Use default configs.')
     throw new Error(`no majority found for archivers get-network-account result `)
   }
+  try {
+    const res = await axios.get<{ networkAccount: WrappedAccount }>(
+      `http://${majorityValue.archiver.ip}:${majorityValue.archiver.port}/get-network-account?hash=false`
+    )
+    if (!res.data) {
+      /* prettier-ignore */ nestedCountersInstance.countEvent('network-config-operation', 'failure: did not get network account from archiver private key, returned null. Use default configs.')
+      throw new Error(
+        `get-network-account from archiver pk:${majorityValue.archiver.publicKey} returned null`
+      )
+    }
 
-  const res = await axios.get<{ networkAccount: WrappedAccount }>(
-    `http://${majorityValue.archiver.ip}:${majorityValue.archiver.port}/get-network-account?hash=false`
-  )
-  if (!res.data) {
-    /* prettier-ignore */ nestedCountersInstance.countEvent('network-config-operation', 'failure: did not get network account from archiver private key, returned null. Use default configs.')
-    throw new Error(`get-network-account from archiver pk:${majorityValue.archiver.publicKey} returned null`)
+    return res.data.networkAccount as WrappedAccount
+  } catch (ex) {
+    /* prettier-ignore */ nestedCountersInstance.countEvent('network-config-operation', `error: ${ex?.message}`)
+    throw new Error(`Not able to fetch get-network-account result from archiver `)
   }
-
-  return res.data.networkAccount as WrappedAccount
 }
 
 async function updateConfigFromNetworkAccount(inputConfig: Config, account: WrappedAccount): Promise<Config> {
