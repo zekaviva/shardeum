@@ -124,6 +124,7 @@ interface ShardeumFlags {
   evmFailOnUnexpectedAccount: boolean
   numberOfAccessListRetry: number
   useFutureBlockForAccessList: boolean
+  extraTimeForAccessListBlock: number
 }
 
 export const ShardeumFlags: ShardeumFlags = {
@@ -285,6 +286,7 @@ export const ShardeumFlags: ShardeumFlags = {
   evmFailOnUnexpectedAccount: true,
   numberOfAccessListRetry: 3,
   useFutureBlockForAccessList: true,
+  extraTimeForAccessListBlock: 7000
 }
 
 export function updateShardeumFlag(key: string, value: string | number | boolean): void {
