@@ -123,6 +123,7 @@ interface ShardeumFlags {
   beta1_11_2: boolean
   evmFailOnUnexpectedAccount: boolean
   numberOfAccessListRetry: number
+  useFutureBlockForAccessList: boolean
 }
 
 export const ShardeumFlags: ShardeumFlags = {
@@ -281,8 +282,9 @@ export const ShardeumFlags: ShardeumFlags = {
   cleanStaleShardeumStateMap: false,
   beta1_11_2: true,
 
-  evmFailOnUnexpectedAccount: false,
-  numberOfAccessListRetry: 1,
+  evmFailOnUnexpectedAccount: true,
+  numberOfAccessListRetry: 3,
+  useFutureBlockForAccessList: true,
 }
 
 export function updateShardeumFlag(key: string, value: string | number | boolean): void {
